@@ -2,7 +2,6 @@
 {% block content %}
 
 <script src="https://code.jquery.com/jquery-1.12.3.js" type="text/javascript"></script> 
-<script src="static/js/jquery.leanModal.min.js" type="text/javascript"></script> 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.css" rel="stylesheet" type="text/css" />
@@ -20,44 +19,67 @@
 
 <link rel="stylesheet" type="text/css" media="all" href="static/css/style.css">
 
-<h1 style="text-align:center">Dashboard of Projects Timeline</h1>
-<div style = "text-align:right;">
-<input onclick = "manageProjects()" type = "button" value = "Manage Projects" />
-</div>
 
-<p>
- 	<b>Descriptions:</b> The timeline of our projects.
-</p>
-<div id="visualization"></div>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Project Timeline</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li><a data-toggle="tab" href="#dashboard">Dashboard</a></li>
+        <li><a data-toggle="tab" href="#management">Management</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
-<div id="w">
-<h2>Projects</h2>
-	<table id="projectTable" class="display" cellspacing="0" width="100%">
-	    <thead>
-	        <tr>
-	        	<th>NO</th>
-	            <th>Name</th>
-	            <th>Start Date</th>
-	            <th>End Date</th>
-	            <th>Milestone</th>
-	            <th>Priority</th>
-	        </tr>
-	    </thead>
-	    <tfoot>
-	        <tr>
-	            <th>NO</th>
-	            <th>Name</th>
-	            <th>Start Date</th>
-	            <th>End Date</th>
-	            <th>Milestone</th>
-	            <th>Priority</th>
-	        </tr>
-	    </tfoot>
-	</table>
-</div>
+<div class="tab-content container">
+
+	<div id="dashboard" class="tab-pane fade in active">
+        <h1 style="text-align:center">Dashboard of Projects Timeline</h1>
+
+		<p>
+		 	<b>Descriptions:</b> The timeline of our projects.
+		</p>
+		<div id="visualization"></div>
+    </div>
+
+    <div id="management" class="tab-pane fade">
+        <h2>Projects Management</h2>
+		<table id="projectTable" class="display" cellspacing="0" width="100%">
+		    <thead>
+		        <tr>
+		        	<th>NO</th>
+		            <th>Name</th>
+		            <th>Start Date</th>
+		            <th>End Date</th>
+		            <th>Milestone</th>
+		            <th>Priority</th>
+		        </tr>
+		    </thead>
+		    <tfoot>
+		        <tr>
+		            <th>NO</th>
+		            <th>Name</th>
+		            <th>Start Date</th>
+		            <th>End Date</th>
+		            <th>Milestone</th>
+		            <th>Priority</th>
+		        </tr>
+		    </tfoot>
+		</table>
+    </div>
+
+</div><!-- /.container -->
 
 
 <script type="text/javascript">
+
+
+	renderTimeline();
+	
+/*
   // DOM element where the Timeline will be attached
   var container = document.getElementById('visualization');
 
@@ -75,7 +97,7 @@
 
   // Create a Timeline
   var timeline = new vis.Timeline(container, items, options);
-
+*/
 
 	var editor; // use a global for the submit and return data rendering in the examples
  
@@ -120,6 +142,10 @@
 	        ]
 	    });
 	 
+	    editor.on( 'postSubmit', function(e, json, data, action) {
+	    	renderTimeline();
+	    });
+
 	    $('#projectTable').DataTable( {		//create a table
 	        dom: "Bfrtip",					//add buttons to the table
 	        ajax: {							//load the table
@@ -144,6 +170,58 @@
 	    });
 	});
 
+	Color = ['red', 'green', 'orange', 'magenta', 'default'];
+
+	function renderTimeline() {
+		$.ajax({
+			url: '/get',
+			success: function (data) {
+			  // hide the "loading..." message
+			  //document.getElementById('loading').style.display = 'none';
+
+			  // DOM element where the Timeline will be attached
+			  var container = document.getElementById('visualization');
+
+			  var transData = [];
+			  data["data"].forEach(function(e) {
+			  	var obj = {};
+			  	obj["start"] = e["end_date"];
+			  	obj["content"] = e["end_date"].substring(5, 10) + '-' + e["name_P"] + '-' + e["milestone"];
+			  	obj["className"] = Color[parseInt(Math.random() * Color.length, 10)];
+			  	transData.push(obj);
+			  });
+
+			  // Create a DataSet (allows two way data-binding)
+			  var items = new vis.DataSet(transData);
+
+			  // Configuration for the Timeline
+			  var options = {
+			  	editable: true
+			  };
+
+			  //remove the page
+			  container.innerHTML="";
+			  // Create a Timeline
+			  var timeline = new vis.Timeline(container, items, options);
+			},
+			error: function (err) {
+			  console.log('Error', err);
+			  if (err.status === 0) {
+			    alert('Failed to load data.\nPlease run this example on a server.');
+			  }
+			  else {
+			    alert('Failed to load data.');
+			  }
+			}
+		});
+	}
+
+
 </script>
+
+
+<script src="static/js/bootstrap.min.js"></script>
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="static/js/ie10-viewport-bug-workaround.js"></script>
 
 {% endblock %}
