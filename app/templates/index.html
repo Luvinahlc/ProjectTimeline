@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="text-align:center">Dashboard of Projects Timeline</h1>
+<div style = "text-align:right;">
+<input type = "button" value = "Manage Projects" />
+</div>
+
+<p>
+ 	<b>Descriptions:</b> The timeline of our projects.
+</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.css" rel="stylesheet" type="text/css" />
+
+<style type="text/css">
+    body, input {
+      font: 12pt verdana;
+    }
+
+    /* custom styles for individual items, load this after vis.css */
+
+    .vis-item.green {
+      background-color: greenyellow;
+      border-color: green;
+    }
+
+    /* create a custom sized dot at the bottom of the red item */
+    .vis-item.red {
+      background-color: red;
+      border-color: darkred;
+      color: white;
+      font-family: monospace;
+      box-shadow: 0 0 10px gray;
+    }
+    .vis-item.vis-dot.red {
+      border-radius: 10px;
+      border-width: 10px;
+    }
+    .vis-item.vis-line.red {
+      border-width: 5px;
+    }
+    .vis-item.vis-box.red {
+      border-radius: 0;
+      border-width: 2px;
+      font-size: 24pt;
+      font-weight: bold;
+    }
+
+    .vis-item.orange {
+      background-color: gold;
+      border-color: orange;
+    }
+    .vis-item.vis-selected.orange {
+      /* custom colors for selected orange items */
+      background-color: orange;
+      border-color: orangered;
+    }
+
+    .vis-item.magenta {
+      background-color: magenta;
+      border-color: purple;
+      color: white;
+    }
+
+    /* our custom classes overrule the styles for selected events,
+       so lets define a new style for the selected events */
+    .vis-item.vis-selected {
+      background-color: white;
+      border-color: black;
+      color: black;
+      box-shadow: 0 0 10px gray;
+    }
+</style>
+
+
+<div id="visualization"></div>
+
+<script type="text/javascript">
+  // DOM element where the Timeline will be attached
+  var container = document.getElementById('visualization');
+
+  // Create a DataSet (allows two way data-binding)
+  var items = new vis.DataSet(
+    {% autoescape false %}
+    {{initalData}}
+    {% endautoescape %}
+  );
+
+  // Configuration for the Timeline
+  var options = {
+  	editable: true
+  };
+
+  // Create a Timeline
+  var timeline = new vis.Timeline(container, items, options);
+</script>
+
+{% endblock %}
