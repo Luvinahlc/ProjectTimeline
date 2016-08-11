@@ -20,7 +20,7 @@ def get():
     data = []
     for row in rows:
         lineData = {'DT_RowId': "row_"+str(row.ID_P),
-                    'ID_P': row.ID_P,
+                    #'ID_P': row.ID_P,
                     'name_P': row.name_P,
                     'start_date': row.startDate,
                     'end_date': row.endDate,
@@ -37,7 +37,7 @@ def get():
 @app.route('/post', methods = ['POST'])
 def post():
     formData = request.form
-    id_p = formData['data[0][ID_P]']
+    #id_p = formData['data[0][ID_P]']
     name_p = formData['data[0][name_P]']
     start_date = formData['data[0][start_date]']
     end_date = formData['data[0][end_date]']
@@ -48,15 +48,20 @@ def post():
     cursor = cnxn.cursor()
     cursor.execute("use projectInfoDB")
 
-    sql = "insert into ProjectInfo values(?, ?, ?, ?, ?, ?)"
-    param = [id_p, name_p, start_date, end_date, milestone, priority_p]
+    sql = "insert into ProjectInfo (name_P, startDate, endDate, milestone, priority_p) values(?, ?, ?, ?, ?)"
+    param = [name_p, start_date, end_date, milestone, priority_p]
 
     cursor.execute(sql, param)
 
     cnxn.commit()
 
+    sql_query = "select * from ProjectInfo where name_P = ? and startDate = ? and endDate = ? and milestone = ? and priority_p = ?"
+    cursor.execute(sql_query, param)
+    rows = cursor.fetchall()
+    id_p = rows[0].ID_P
+
     addData = {'DT_RowId': 'row_'+str(id_p),
-               'ID_P': id_p,
+               #'ID_P': id_p,
                'name_P': name_p,
                'start_date': start_date,
                'end_date': end_date,
@@ -72,10 +77,12 @@ def post():
 @app.route('/put', methods = ['PUT'])
 def put():
     formData = request.form
-    temp_str = request.form.keys()[0]
+    temp_str = request.form.keys()[1]
+    print(temp_str)
     temp_str_list = temp_str.split('[');
+    print(temp_str_list)
     row_id = temp_str_list[1][0:(len(temp_str_list[1])-1)]
-    #id_p = formData['data['+row_id+'][ID_P]']
+    id_p = int(row_id[4:(len(row_id))])
     name_p = formData['data['+row_id+'][name_P]']
     start_date = formData['data['+row_id+'][start_date]']
     end_date = formData['data['+row_id+'][end_date]']
@@ -86,7 +93,7 @@ def put():
     cursor = cnxn.cursor()
     cursor.execute("use projectInfoDB")
 
-    id_p = int(row_id[4:(len(row_id))])
+
     sql = "update ProjectInfo set name_P = ? , startDate = ? , endDate = ? , milestone = ? , priority_p = ? where ID_P = ?"
     param = [name_p, start_date, end_date, milestone, priority_p, id_p]
 
@@ -95,7 +102,7 @@ def put():
     cnxn.commit()
 
     editData = {'DT_RowId': 'row_'+str(id_p),
-               'ID_P': id_p,
+               #'ID_P': id_p,
                'name_P': name_p,
                'start_date': start_date,
                'end_date': end_date,
@@ -114,13 +121,14 @@ def delete_entry():
     temp_str = request.args.to_dict().keys()[0]
     temp_str_list = temp_str.split('[');
     row_id = temp_str_list[1][0:(len(temp_str_list[1])-1)]
-    id_p = deleteData['data['+row_id+'][ID_P]']
+    id_p = int(row_id[4:(len(row_id))])
+    '''
     name_p = deleteData['data['+row_id+'][name_P]']
     start_date = deleteData['data['+row_id+'][start_date]']
     end_date = deleteData['data['+row_id+'][end_date]']
     milestone = deleteData['data['+row_id+'][milestone]']
     priority_p = deleteData['data['+row_id+'][priority_p]']
-
+    '''
     cnxn = pyodbc.connect('Driver={SQL Server Native Client 11.0};Server=tcp:t-luhua.database.windows.net,1433;Database=projectInfoDB;Uid=t-luhua@t-luhua;Pwd={Luvina&921109};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
     cursor = cnxn.cursor()
     cursor.execute("use projectInfoDB")

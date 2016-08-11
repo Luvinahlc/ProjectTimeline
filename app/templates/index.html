@@ -15,7 +15,7 @@
   </div>
 </nav>
 
-<div class="tab-content container">
+<div class="tab-content">
 	<div id="dashboard" class="tab-pane fade in active">
         <h1 style="text-align:center">Dashboard of Projects Timeline</h1>
 
@@ -25,12 +25,11 @@
 		<div id="visualization"></div>
     </div>
 
-    <div id="management" class="tab-pane fade">
-        <h2>Projects Management</h2>
+    <div id="management" class="tab-pane fade container">
+        <h1 style="text-align:center">Projects Management</h1>
 		<table id="projectTable" class="display" cellspacing="0" width="100%">
 		    <thead>
 		        <tr>
-		        	<th>NO</th>
 		            <th>Name</th>
 		            <th>Start Date</th>
 		            <th>End Date</th>
@@ -40,7 +39,6 @@
 		    </thead>
 		    <tfoot>
 		        <tr>
-		            <th>NO</th>
 		            <th>Name</th>
 		            <th>Start Date</th>
 		            <th>End Date</th>
@@ -99,9 +97,6 @@
 	        },
 	        table: "#projectTable",
 	        fields: [ {
-	                label: "NO:",
-	                name: "ID_P"
-	            }, {
 	                label: "Name:",
 	                name: "name_P"
 	            }, {
@@ -134,7 +129,6 @@
 	        	dataType: 'json'
 	        },
 	        columns: [
-	            { data: "ID_P" },
 	            { data: "name_P" },
 	            { data: "start_date" },
 	            { data: "end_date" },
@@ -150,7 +144,7 @@
 	    });
 	});
 
-	var Colors = ['red', 'gold', 'greenyellow', 'skyblue', 'magenta'];
+	var Colors = ['red', 'gold', 'greenyellow', 'skyblue', 'magenta', 'chocolate', 'mediumSeaGreen', 'royalblue', 'blueviolet', 'lightcoral'];
 
 	function renderTimeline() {
 		$.ajax({
@@ -251,7 +245,7 @@
 		var currentDate = (new Date()).toISOString().substring(0,10);
 		var endDateTime = new Date(endDate).getTime();
 		var currentTime = new Date(currentDate).getTime();
-	  	if (endDateTime < currentTime) { //endDate before currentTime
+	  	if (endDateTime < (new Date()).getTime()) { //endDate before this moment
 	  		size = 'default';
 	  	}
 	  	else if (endDateTime - currentTime < 3*24*60*60*1000) { //within 3 days
