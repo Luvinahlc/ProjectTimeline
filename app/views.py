@@ -78,9 +78,7 @@ def post():
 def put():
     formData = request.form
     temp_str = request.form.keys()[1]
-    print(temp_str)
     temp_str_list = temp_str.split('[');
-    print(temp_str_list)
     row_id = temp_str_list[1][0:(len(temp_str_list[1])-1)]
     id_p = int(row_id[4:(len(row_id))])
     name_p = formData['data['+row_id+'][name_P]']
@@ -117,27 +115,21 @@ def put():
 
 @app.route('/delete', methods = ['DELETE'])
 def delete_entry():
-    deleteData = request.args.to_dict()
-    temp_str = request.args.to_dict().keys()[0]
-    temp_str_list = temp_str.split('[');
-    row_id = temp_str_list[1][0:(len(temp_str_list[1])-1)]
-    id_p = int(row_id[4:(len(row_id))])
-    '''
-    name_p = deleteData['data['+row_id+'][name_P]']
-    start_date = deleteData['data['+row_id+'][start_date]']
-    end_date = deleteData['data['+row_id+'][end_date]']
-    milestone = deleteData['data['+row_id+'][milestone]']
-    priority_p = deleteData['data['+row_id+'][priority_p]']
-    '''
     cnxn = pyodbc.connect('Driver={SQL Server Native Client 11.0};Server=tcp:t-luhua.database.windows.net,1433;Database=projectInfoDB;Uid=t-luhua@t-luhua;Pwd={Luvina&921109};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
     cursor = cnxn.cursor()
     cursor.execute("use projectInfoDB")
 
-    sql = "delete from ProjectInfo where ID_P = ?"# and name_P = ? and startDate = ? and endDate = ? and milestone = ? and priority_p = ?"
-    param = [id_p]#, name_p, start_date, end_date, milestone, priority_p]
+    deleteData = request.args.to_dict()
 
-    cursor.execute(sql, param)
-
+    for temp_str in deleteData.keys():
+        temp_str_list = temp_str.split('[');
+        if len(temp_str_list) > 1 :
+            row_id = temp_str_list[1][0:(len(temp_str_list[1])-1)]
+            id_p = int(row_id[4:(len(row_id))])
+            sql = "delete from ProjectInfo where ID_P = ?"# and name_P = ? and startDate = ? and endDate = ? and milestone = ? and priority_p = ?"
+            param = [id_p]#, name_p, start_date, end_date, milestone, priority_p]
+            cursor.execute(sql, param)
+    
     cnxn.commit()
 
     cursor.close()
