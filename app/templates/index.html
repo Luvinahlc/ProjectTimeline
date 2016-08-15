@@ -17,11 +17,14 @@
 
 <div class="tab-content">
 	<div id="dashboard" class="tab-pane fade in active">
-        <h1 style="text-align:center">Dashboard of Projects Timeline</h1>
-
-		<p>
-		 	<b>Descriptions:</b> The timeline of our projects.
-		</p>
+		<table frame="void" style="float:right">
+		  <tr>
+		    <th>Missed: </th>
+		    <th><div class="box1"></div>once, </th>
+		    <th><div class="box2"></div>twice, </th>
+		    <th><div class="box3"></div>>=three times.</th>
+		  </tr>
+		</table>
 		<div id="visualization"></div>
     </div>
 
@@ -31,19 +34,19 @@
 		    <thead>
 		        <tr>
 		            <th>Name</th>
-		            <th>Start Date</th>
 		            <th>End Date</th>
 		            <th>Milestone</th>
-		            <th>Priority</th>
+		            <th>Level</th>
+		            <th>Missed</th>
 		        </tr>
 		    </thead>
 		    <tfoot>
 		        <tr>
 		            <th>Name</th>
-		            <th>Start Date</th>
 		            <th>End Date</th>
 		            <th>Milestone</th>
-		            <th>Priority</th>
+		            <th>Level</th>
+		            <th>Missed</th>
 		        </tr>
 		    </tfoot>
 		</table>
@@ -56,26 +59,6 @@
 
 
 	renderTimeline();
-	
-/*
-  // DOM element where the Timeline will be attached
-  var container = document.getElementById('visualization');
-
-  // Create a DataSet (allows two way data-binding)
-  var items = new vis.DataSet(
-    {% autoescape false %}
-    {{initalData}}
-    {% endautoescape %}
-  );
-
-  // Configuration for the Timeline
-  var options = {
-  	editable: true
-  };
-
-  // Create a Timeline
-  var timeline = new vis.Timeline(container, items, options);
-*/
 
 	var editor; // use a global for the submit and return data rendering in the examples
  
@@ -100,10 +83,6 @@
 	                label: "Name:",
 	                name: "name_P"
 	            }, {
-	                label: "Start date:",
-	                name: "start_date",
-	                type: "datetime"
-	            }, {
 	                label: "End date:",
 	                name: "end_date",
 	                type: "datetime"
@@ -111,12 +90,77 @@
 	                label: "Milestone:",
 	                name: "milestone"
 	            }, {
-	                label: "Priority:",
-	                name: "priority_p"
+	                label: "Level:",
+	                name: "level"
+	            }, {
+	            	label: "Missed:",
+	            	name: "missed",
+	            	//type: "readonly"
 	            }
 	        ]
 	    });
 	 
+	 	/*
+	    editor.on( 'onInitEdit', function () {
+			editor.disable('missed');
+		} );
+		*/
+
+		editor.on( 'preSubmit', function ( e, o, action ) {
+	        if ( action !== 'remove' ) {
+	            var name = editor.field( 'name_P' );
+	            var endDate = editor.field( 'end_date' );
+	            var milestone = editor.field( 'milestone' );
+	            var level = editor.field( 'level' );
+	            var missed = editor.field( 'missed' );
+	 
+	            // Only validate user input values - different values indicate that
+	            // the end user has not entered a value
+	            if ( ! name.isMultiValue() ) {
+	                if ( ! name.val() ) {
+	                    name.error( 'A project name must be given' );
+	                }
+	            }
+	            if ( ! milestone.isMultiValue() ) {
+	                if ( ! milestone.val() ) {
+	                    milestone.error( 'Milestone must be given' );
+	                }
+	            }
+	            if ( ! endDate.isMultiValue() ) {
+	            	if ( ! endDate.val() ) {
+	            		endDate.error( 'End date must be given' );
+	            	}
+	            	if ( ! dateValidationCheck(endDate.val()) ) {
+	            		endDate.error( 'End date must be the format of "YYYY-MM-DD"' );
+	            	}
+	            }
+	            if ( ! level.isMultiValue() ) {
+	                if ( ! level.val() ) {
+	                    level.error( 'Level must be given' );
+	                }
+	                if ( level.val() !== "1" && level.val() !== "2" ) {
+	                	level.error( 'Level must be 1 or 2' );
+	                }
+	            }
+	            if ( ! missed.isMultiValue() ) {
+	                if ( ! missed.val() ) {
+	                    missed.error( 'Missed must be given' );
+	                }
+	                if ( isNaN(missed.val()) || !IsNum(missed.val()) || parseInt(missed.val(), 10) < 0) {
+	                	missed.error( 'Missed must be a non-negative integer' );
+	                }
+	            }
+
+	 
+	            
+	 
+	            // If any error was reported, cancel the submission so it can be corrected
+	            if ( this.inError() ) {
+	                return false;
+	            }
+	        }
+	    } );
+
 	    editor.on( 'postSubmit', function(e, json, data, action) {
 	    	renderTimeline();
 	    });
@@ -130,10 +174,10 @@
 	        },
 	        columns: [
 	            { data: "name_P" },
-	            { data: "start_date" },
 	            { data: "end_date" },
 	            { data: "milestone" },
-	            { data: "priority_p" }
+	            { data: "level" },
+	            { data: "missed"},
 	        ],
 	        select: true,
 	        buttons: [
@@ -144,121 +188,191 @@
 	    });
 	});
 
-	var Colors = ['red', 'gold', 'greenyellow', 'skyblue', 'magenta', 'chocolate', 'mediumSeaGreen', 'royalblue', 'blueviolet', 'lightcoral'];
+	setTimeout(function(){
+	   window.location.reload(1);
+	}, 1000*60*60*4);
+
+	function IsNum(s)
+	{
+	    if(s!=null){
+	        var r,re;
+	        re = /\d*/i; 
+	        r = s.match(re);
+	        return (r==s)?true:false;
+	    }
+	    return false;
+	}
+
+	function dateValidationCheck(str) {
+	  var re = new RegExp("^([0-9]{4})[-]{1}([0-9]{2})[-]{1}([0-9]{2})$");
+	  var strDataValue;
+	  var infoValidation = true;
+	  if ((strDataValue = re.exec(str)) != null) {
+	    var i;
+	    i = parseFloat(strDataValue[1]);
+	    if (i <= 0 || i > 9999) { 
+	      infoValidation = false;
+	    }
+	    i = parseFloat(strDataValue[2]);
+	    if (i <= 0 || i > 12) { 
+	      infoValidation = false;
+	    }
+	    i = parseFloat(strDataValue[3]);
+	    if (i <= 0 || i > 31) { 
+	      infoValidation = false;
+	    }
+	  } else {
+	    infoValidation = false;
+	  }
+	  return infoValidation;
+	}
+
+
+	var Colors = ['lightskyblue', 'violet', 'mediumSeaGreen', 'lightslategray', 'mediumpurple', 'lightcoral'];
+	var darkColors = {'lightskyblue': 'blue', 'violet': 'magenta', 'mediumSeaGreen': 'green', 'lightslategray': 'dimgery', 'mediumpurple': 'purple', 'lightcoral': 'indianred', 'red' : 'darkred', 'orange': 'chocolate', 'yellow': 'goldenrod'};
+	var fontColor = ['white', 'black'];
+	var size = {'0': "font-size: 14pt; border-radius: 3px;", 
+				'1': "font-size: 20pt; border-radius: 4px;",
+				'2': "font-size: 26pt; border-radius: 5px;",
+				'3': "font-size: 32pt; border-radius: 6px; animation: flash linear 2s infinite;"};
 
 	function renderTimeline() {
 		$.ajax({
 			url: '/get',
 			success: function (data) {
-			  // hide the "loading..." message
-			  //document.getElementById('loading').style.display = 'none';
+				// hide the "loading..." message
+				//document.getElementById('loading').style.display = 'none';
 
-			  // DOM element where the Timeline will be attached
-			  var container = document.getElementById('visualization');
+				// DOM element where the Timeline will be attached
+				document.getElementById("visualization").innerHTML = "";
+				var projectNames = data["projectNames"];
+				$.each(projectNames, function(index, value) {
+					var newh3 = $('<h3><b>Project: </b>' + value + '</h3>');
+					var newdiv = $('<div></div>');
+					var newdivId = 'project'+index;
+					newdiv.attr('id', newdivId);
+					newh3.appendTo('#visualization');
+					newdiv.appendTo('#visualization');
+					var container = document.getElementById(newdivId);
 
-			  var currentTime = new Date();
-			  var ColorsFlag = [];
-			  for (var i  = 0; i < Colors.length; i++) {
-			  	ColorsFlag.push(null);
-			  }
+					var currentTime = new Date();
+					var ColorsFlag = [];
+					for (var i  = 0; i < Colors.length; i++) {
+						ColorsFlag.push(null);
+					}
 
-			  var transData = [];
-			  data["data"].forEach(function(e) {
-			  	var obj = {};
-			  	obj["start"] = e["end_date"];
+					var transData = [];
+					data["data"].forEach(function(e) {
+						if (e["name_P"] === value) {
+							var obj = {};
+							e["end_date"] = e["end_date"].substring(0, 10) + " 20:00:00";
+							obj["start"] = e["end_date"];
+							obj["content"] = e["end_date"].substring(5, 10) + '<br>' + "level: " + e["level"] + '<br>' + e["milestone"];
+							background_color = getColor(e["name_P"], e["missed"], ColorsFlag);
+							if (getSize(e["end_date"]) !== 'default') {
+								obj["style"] = "background-color: " + background_color + 
+											 "; border-color: " + darkColors[background_color] +
+											 "; color: " + fontColor[e["level"]-1] +
+											 "; " + size[getSize(e["end_date"])] +
+											 "; box-shadow: 0 0 10px gray; border-width: 2px;";
+							}
+							transData.push(obj);
+						}
+					});
 
-			  	obj["content"] = e["end_date"].substring(5, 10) + '<br>' + e["name_P"] + '<br>' + e["milestone"];
-			  	obj["className"] = getColor(e["name_P"], ColorsFlag) + "-size" + getSize(e["end_date"]);
+					// Create a DataSet (allows two way data-binding)
+					var items = new vis.DataSet(transData);
 
-			  	transData.push(obj);
-			  });
+					// Configuration for the Timeline
+					var options = {
+						editable: true,
+						start: currentTime.setDate(currentTime.getDate() - 3),
+						end: currentTime.setDate(currentTime.getDate() + 30),
+						zoomMin: 1000 * 60 * 60 * 24 * 15,
+					zoomMax: 1000 * 60 * 60 * 24 * 31 * 6,
+					minHeight: 300,
+					maxHeight: 900
+					};
 
-			  
-
-			  // Create a DataSet (allows two way data-binding)
-			  var items = new vis.DataSet(transData);
-
-			  // Configuration for the Timeline
-			  var options = {
-			  	editable: true,
-			  	start: currentTime.setDate(currentTime.getDate() - 3),
-			  	end: currentTime.setDate(currentTime.getDate() + 18),
-			  	zoomMin: 1000 * 60 * 60 * 24 * 15,
-    			zoomMax: 1000 * 60 * 60 * 24 * 31 * 6,
-    			minHeight: 300,
-    			maxHeight: 900
-			  };
-
-			  //remove the page
-			  container.innerHTML="";
-			  // Create a Timeline
-			  var timeline = new vis.Timeline(container);
-			  timeline.setOptions(options);
-			  timeline.setItems(items);
+					// Create a Timeline
+					var timeline = new vis.Timeline(container);
+					timeline.setOptions(options);
+					timeline.setItems(items);
+					});
 			},
 			error: function (err) {
-			  console.log('Error', err);
-			  if (err.status === 0) {
-			    alert('Failed to load data.\nPlease run this example on a server.');
-			  }
-			  else {
-			    alert('Failed to load data.');
-			  }
+				console.log('Error', err);
+				if (err.status === 0) {
+					alert('Failed to load data.\nPlease run this example on a server.');
+				}
+				else {
+					alert('Failed to load data.');
+				}
 			}
 		});
 	}
 
-
-	function getColor(name, colorsFlag) {
+	function getColor(name, missed, colorsFlag) {
 		var color;
-
-		var code = (name.hashCode()%Colors.length+Colors.length)%Colors.length;
-		if (colorsFlag[code] == null) {
-			color = Colors[code];
-			colorsFlag[code] = name;
-		}
-		else if (name === colorsFlag[code]){
-			color = Colors[code];
-		}
-		else {
-			var index = code+1;
-			while (index != code) {
-				if (colorsFlag[index] == null) {
-					color = Colors[index];
-					colorsFlag[index] = name;
-					break;
-				}
-				else if (name === colorsFlag[index]) {
-					color = Colors[index];
-					break;
-				}
-				else {
-					index = (index+1)%Colors.length;
+		if (missed == 0) {
+			var code = (name.hashCode()%Colors.length+Colors.length)%Colors.length;
+			if (colorsFlag[code] == null) {
+				color = Colors[code];
+				colorsFlag[code] = name;
+			}
+			else if (name === colorsFlag[code]){
+				color = Colors[code];
+			}
+			else {
+				var index = code+1;
+				while (index != code) {
+					if (colorsFlag[index] == null) {
+						color = Colors[index];
+						colorsFlag[index] = name;
+						break;
+					}
+					else if (name === colorsFlag[index]) {
+						color = Colors[index];
+						break;
+					}
+					else {
+						index = (index+1)%Colors.length;
+					}
 				}
 			}
 		}
+		else if (missed == 1) {
+			color = "yellow";
+		}
+		else if (missed == 2) {
+			color = "orange";
+		}
+		else {
+			color = "red";
+
+		}		
 		return color;
 	}
 
 	function getSize(endDate) {
 		var size;
-		var currentDate = (new Date()).toISOString().substring(0,10);
+	//	var currentDate = (new Date()).toISOString().substring(0,10);
 		var endDateTime = new Date(endDate).getTime();
-		var currentTime = new Date(currentDate).getTime();
+		var currentTime = new Date().getTime();
 	  	if (endDateTime < (new Date()).getTime()) { //endDate before this moment
 	  		size = 'default';
 	  	}
 	  	else if (endDateTime - currentTime < 3*24*60*60*1000) { //within 3 days
-	  		size = "3";
+	  		size = '3';
 	  	}
 	  	else if (endDateTime - currentTime < 7*24*60*60*1000) { //3~7 days
-	  		size = "2";
+	  		size = '2';
 	  	}
 	  	else if (endDateTime - currentTime < 15*24*60*60*1000) { //7~15 days
-	  		size = "1";
+	  		size = '1';
 	  	}
 	  	else { //after 15 days
-	  		size = "0";
+	  		size = '0';
 	  	}
 	  	
 	  	return size;
