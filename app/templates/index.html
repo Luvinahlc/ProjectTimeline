@@ -17,7 +17,6 @@
 
 <div class="tab-content">
 	<div id="dashboard" class="tab-pane fade in active">
-		
 		<table style="float:right">
 		  <tr>
 		    <th>Missed:  </th>
@@ -26,8 +25,17 @@
 		    <th><div class="box3"></div> >=three times</th>
 		  </tr>
 		</table>
-		
-		<div id="visualization"></div>
+
+		<ul class="nav nav-tabs">
+		    <li id="tab0" class="active"><a href="#menu0"></a></li>
+		    <li id="tab1"><a href="#menu1"></a></li>
+		    <li id="tab2"><a href="#menu2"></a></li>
+		</ul>
+		<div class="tab-content">
+		    <div id="menu0" class="tab-pane fade in active"></div>
+		    <div id="menu1" class="tab-pane fade"></div>
+		    <div id="menu2" class="tab-pane fade"></div>
+		</div>
     </div>
 
     <div id="management" class="tab-pane fade container">
@@ -61,10 +69,16 @@
 
 
 	renderTimeline();
+	$(document).ready(function(){
+	    $(".nav-tabs a").click(function(){
+	        $(this).tab('show');
+	    });
+	});
 
-	var editor; // use a global for the submit and return data rendering in the examples
+	//var editor; // use a global for the submit and return data rendering in the examples
  
 	$(document).ready(function() {
+	
 	    editor = new $.fn.dataTable.Editor( {
 	        ajax: {
 	        	create: {
@@ -205,6 +219,7 @@
 	        ],
 	        select: true,
 	        buttons: [
+			
 	            { extend: "create", editor: editor },
 	            { extend: "edit",   editor: editor },
 	            { extend: "remove", editor: editor }
@@ -271,22 +286,34 @@
 				//document.getElementById('loading').style.display = 'none';
 
 				// DOM element where the Timeline will be attached
-				document.getElementById("visualization").innerHTML = "";
+				document.getElementById("menu0").innerHTML = "";
+				document.getElementById("menu1").innerHTML = "";
+				document.getElementById("menu2").innerHTML = "";
+
+				$(".nav-tabs a")[0].text = "";
+				$(".nav-tabs a")[1].text = "";
+				$(".nav-tabs a")[2].text = "";
+
+				var ColorsFlag = [];
+				for (var i  = 0; i < Colors.length; i++) {
+					ColorsFlag.push(null);
+				}
+
 				var projectNames = data["projectNames"];
 				$.each(projectNames, function(index, value) {
+					
 					var newh3 = $('<h3><b>Project: </b>' + value + '</h3>');
 					var newdiv = $('<div></div>');
 					var newdivId = 'project'+index;
 					newdiv.attr('id', newdivId);
-					newh3.appendTo('#visualization');
-					newdiv.appendTo('#visualization');
-					var container = document.getElementById(newdivId);
+					var tab_no = parseInt(index/2);
+					newh3.appendTo('#menu' + tab_no);
+					newdiv.appendTo('#menu' + tab_no);
 
+					$(".nav-tabs a")[tab_no].text = $('#tab' + parseInt(index/2).toString()).text() + "·" + value;
+
+					var container = document.getElementById(newdivId);
 					var currentTime = new Date();
-					var ColorsFlag = [];
-					for (var i  = 0; i < Colors.length; i++) {
-						ColorsFlag.push(null);
-					}
 
 					var transData = [];
 					data["data"].forEach(function(e) {

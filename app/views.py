@@ -81,7 +81,6 @@ def post():
 @app.route('/put', methods = ['PUT'])
 def put():
     formData = request.form
-    print(formData)
     for temp_str in formData.keys():
         if ("[" in temp_str) :
             temp_str_list = temp_str.split('[');
