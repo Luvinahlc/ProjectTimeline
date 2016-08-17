@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify
 from app import app
 from random import choice
-import pyodbc
+import MySQLdb
 
 @app.route('/')
 @app.route('/index')
@@ -12,19 +12,18 @@ def index():
 
 @app.route('/get')
 def get():
-    cnxn = pyodbc.connect('Driver={SQL Server Native Client 11.0};Server=tcp:t-luhua.database.windows.net,1433;Database=projectInfoDB;Uid=t-luhua@t-luhua;Pwd={Luvina&921109};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
+    cnxn = MySQLdb.connect(host = "localhost", user = "root", passwd = "3xch@ngeMon", db = "projectInfoDB")
     cursor = cnxn.cursor()
-    cursor.execute("use projectInfoDB")
     cursor.execute("select * from ProjectInfo")
     rows = cursor.fetchall()
     data = []
     for row in rows:
-        lineData = {'DT_RowId': "row_"+str(row.ID_P),
-                    'name_P': row.name_P,
-                    'end_date': row.endDate,
-                    'milestone': row.milestone,
-                    'level': row.level,
-                    'missed': row.missed
+        lineData = {'DT_RowId': "row_"+str(row[0]),
+                    'name_P': row[1],
+                    'end_date': row[2],
+                    'milestone': row[3],
+                    'level': row[4],
+                    'missed': row[5]
                     }
         data.append(lineData)
 
@@ -32,7 +31,7 @@ def get():
     rows = cursor.fetchall()
     projectNames = []
     for row in rows:
-        projectNames.append(row.name_P)
+        projectNames.append(row[0])
 
     table = {"data": data, "projectNames": projectNames}
     cursor.close()
@@ -49,21 +48,20 @@ def post():
     level = formData['data[0][level]']
     missed = formData['data[0][missed]']
 
-    cnxn = pyodbc.connect('Driver={SQL Server Native Client 11.0};Server=tcp:t-luhua.database.windows.net,1433;Database=projectInfoDB;Uid=t-luhua@t-luhua;Pwd={Luvina&921109};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
+    cnxn = MySQLdb.connect(host = "localhost", user = "root", passwd = "3xch@ngeMon", db = "projectInfoDB")
     cursor = cnxn.cursor()
-    cursor.execute("use projectInfoDB")
-
-    sql = "insert into ProjectInfo (name_P, endDate, milestone, level, missed) values(?, ?, ?, ?, ?)"
+    
+    sql = "insert into ProjectInfo (name_P, endDate, milestone, level, missed) values(%s, %s, %s, %s, %s)"
     param = [name_p, end_date, milestone, level, missed]
 
     cursor.execute(sql, param)
 
     cnxn.commit()
 
-    sql_query = "select * from ProjectInfo where name_P = ? and endDate = ? and milestone = ? and level = ? and missed = ? "
+    sql_query = "select * from ProjectInfo where name_P = %s and endDate = %s and milestone = %s and level = %s and missed = %s "
     cursor.execute(sql_query, param)
     rows = cursor.fetchall()
-    id_p = rows[0].ID_P
+    id_p = rows[0][0]
 
     addData = {'DT_RowId': 'row_'+str(id_p),
                'name_P': name_p,
@@ -94,12 +92,11 @@ def put():
     level = formData['data['+row_id+'][level]']
     missed = formData['data['+row_id+'][missed]']
 
-    cnxn = pyodbc.connect('Driver={SQL Server Native Client 11.0};Server=tcp:t-luhua.database.windows.net,1433;Database=projectInfoDB;Uid=t-luhua@t-luhua;Pwd={Luvina&921109};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
+    cnxn = MySQLdb.connect(host = "localhost", user = "root", passwd = "3xch@ngeMon", db = "projectInfoDB")
     cursor = cnxn.cursor()
-    cursor.execute("use projectInfoDB")
 
 
-    sql = "update ProjectInfo set name_P = ? , endDate = ? , milestone = ? , level = ? , missed = ? where ID_P = ?"
+    sql = "update ProjectInfo set name_P = %s , endDate = %s , milestone = %s , level = %s , missed = %s where ID_P = %s"
     param = [name_p, end_date, milestone, level, missed, id_p]
 
     cursor.execute(sql, param)
@@ -121,9 +118,8 @@ def put():
 
 @app.route('/delete', methods = ['DELETE'])
 def delete_entry():
-    cnxn = pyodbc.connect('Driver={SQL Server Native Client 11.0};Server=tcp:t-luhua.database.windows.net,1433;Database=projectInfoDB;Uid=t-luhua@t-luhua;Pwd={Luvina&921109};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;')
+    cnxn = MySQLdb.connect(host = "localhost", user = "root", passwd = "3xch@ngeMon", db = "projectInfoDB")
     cursor = cnxn.cursor()
-    cursor.execute("use projectInfoDB")
 
     deleteData = request.args.to_dict()
 
@@ -132,7 +128,7 @@ def delete_entry():
         if len(temp_str_list) > 1 :
             row_id = temp_str_list[1][0:(len(temp_str_list[1])-1)]
             id_p = int(row_id[4:(len(row_id))])
-            sql = "delete from ProjectInfo where ID_P = ?"
+            sql = "delete from ProjectInfo where ID_P = %s"
             param = [id_p]
             cursor.execute(sql, param)
     
