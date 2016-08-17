@@ -17,14 +17,16 @@
 
 <div class="tab-content">
 	<div id="dashboard" class="tab-pane fade in active">
-		<table frame="void" style="float:right">
+		
+		<table style="float:right">
 		  <tr>
-		    <th>Missed: </th>
-		    <th><div class="box1"></div>once, </th>
-		    <th><div class="box2"></div>twice, </th>
-		    <th><div class="box3"></div>>=three times.</th>
+		    <th>Missed:  </th>
+		    <th><div class="box1"></div> once  </th>
+		    <th><div class="box2"></div> twice  </th>
+		    <th><div class="box3"></div> >=three times</th>
 		  </tr>
 		</table>
+		
 		<div id="visualization"></div>
     </div>
 
@@ -105,15 +107,39 @@
 			editor.disable('missed');
 		} );
 		*/
+		
+
+		$(document).on( 'change', '#DTE_Field_end_date', function () {
+			end_date_old = $('#DTE_Field_end_date').val();
+			missed_old = $('#DTE_Field_missed').val();
+		} );
 
 		editor.on( 'preSubmit', function ( e, o, action ) {
+			if (action == 'edit') {
+				var endDate = editor.field( 'end_date' ).val();
+				var missed = editor.field( 'missed' ).val();
+				if (end_date_old < endDate) {
+					//editor.field( 'missed' ).val(parseInt(missed_old, 10)+1);
+					var r=confirm("You have changed End Date. Do you want to set Missed to " + (parseInt(missed_old, 10)+1) + " ?");
+					if (r==true) {
+						editor.field( 'missed' ).val(parseInt(missed_old, 10)+1);
+						var key = Object.keys(e["target"]["s"]["editData"]["missed"]);
+						o["data"][key[0]]["missed"] = (editor.field( 'missed' ).val()).toString();
+					}
+					else {
+						console.log("cancel");
+						//return false;
+					}
+				}				
+			}
 	        if ( action !== 'remove' ) {
+
 	            var name = editor.field( 'name_P' );
 	            var endDate = editor.field( 'end_date' );
 	            var milestone = editor.field( 'milestone' );
 	            var level = editor.field( 'level' );
 	            var missed = editor.field( 'missed' );
-	 
+
 	            // Only validate user input values - different values indicate that
 	            // the end user has not entered a value
 	            if ( ! name.isMultiValue() ) {
@@ -133,6 +159,8 @@
 	            	if ( ! dateValidationCheck(endDate.val()) ) {
 	            		endDate.error( 'End date must be the format of "YYYY-MM-DD"' );
 	            	}
+	            	endDate.error($(this).text());
+
 	            }
 	            if ( ! level.isMultiValue() ) {
 	                if ( ! level.val() ) {
@@ -150,10 +178,6 @@
 	                	missed.error( 'Missed must be a non-negative integer' );
 	                }
 	            }
-
-	 
-	            
-	 
 	            // If any error was reported, cancel the submission so it can be corrected
 	            if ( this.inError() ) {
 	                return false;
@@ -230,11 +254,14 @@
 
 	var Colors = ['lightskyblue', 'violet', 'mediumSeaGreen', 'lightslategray', 'mediumpurple', 'lightcoral'];
 	var darkColors = {'lightskyblue': 'blue', 'violet': 'magenta', 'mediumSeaGreen': 'green', 'lightslategray': 'dimgery', 'mediumpurple': 'purple', 'lightcoral': 'indianred', 'red' : 'darkred', 'orange': 'chocolate', 'yellow': 'goldenrod'};
-	var fontColor = ['white', 'black'];
-	var size = {'0': "font-size: 14pt; border-radius: 3px;", 
-				'1': "font-size: 20pt; border-radius: 4px;",
-				'2': "font-size: 26pt; border-radius: 5px;",
-				'3': "font-size: 32pt; border-radius: 6px; animation: flash linear 2s infinite;"};
+	var size = {'02': "font-size: 14pt; ", 
+				'01': "font-size: 17pt; ",
+				'12': "font-size: 20pt; ",
+				'11': "font-size: 23pt; ",
+				'22': "font-size: 26pt; ",
+				'21': "font-size: 29pt; ",
+				'32': "font-size: 32pt; animation: flash linear 2s infinite;",
+				'31': "font-size: 35pt; animation: flash linear 2s infinite;"};
 
 	function renderTimeline() {
 		$.ajax({
@@ -267,14 +294,14 @@
 							var obj = {};
 							e["end_date"] = e["end_date"].substring(0, 10) + " 20:00:00";
 							obj["start"] = e["end_date"];
-							obj["content"] = e["end_date"].substring(5, 10) + '<br>' + "level: " + e["level"] + '<br>' + e["milestone"];
+							obj["content"] = e["end_date"].substring(5, 10)// + '<br>' + "level: " + e["level"]
+											 + '<br>' + e["milestone"];
 							background_color = getColor(e["name_P"], e["missed"], ColorsFlag);
 							if (getSize(e["end_date"]) !== 'default') {
 								obj["style"] = "background-color: " + background_color + 
 											 "; border-color: " + darkColors[background_color] +
-											 "; color: " + fontColor[e["level"]-1] +
-											 "; " + size[getSize(e["end_date"])] +
-											 "; box-shadow: 0 0 10px gray; border-width: 2px;";
+											 "; " + size[getSize(e["end_date"])+e["level"].toString()] +
+											 "; font-family: sans-serif; border-radius: 12px; padding: 5px; box-shadow: 0 0 10px gray; border-width: 2px;";
 							}
 							transData.push(obj);
 						}

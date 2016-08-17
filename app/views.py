@@ -81,8 +81,12 @@ def post():
 @app.route('/put', methods = ['PUT'])
 def put():
     formData = request.form
-    temp_str = formData.keys()[1]
-    temp_str_list = temp_str.split('[');
+    print(formData)
+    for temp_str in formData.keys():
+        if ("[" in temp_str) :
+            temp_str_list = temp_str.split('[');
+            break
+    
     row_id = temp_str_list[1][0:(len(temp_str_list[1])-1)]
     id_p = int(row_id[4:(len(row_id))])
     name_p = formData['data['+row_id+'][name_P]']
